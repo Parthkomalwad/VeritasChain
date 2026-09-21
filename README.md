@@ -1,63 +1,138 @@
 <div align="center">
 
-<img src=".github/assets/banner.svg" width="100%" alt="VeritasChain — Authenticate Reality. Preserve Truth."/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
+  <img src="docs/assets/banner-dark.svg" alt="VeritasChain — authenticate reality, preserve truth" width="900">
+</picture>
 
-<br/>
+<br>
 
-<img src="VeritasChain.png" width="180" alt="VeritasChain Logo"/>
+### Prove a file existed, at a given moment, published by a given wallet — with nothing to trust but a public blockchain.
 
-<br/>
-<br/>
+[![License: MIT](https://img.shields.io/badge/License-MIT-C9A84C.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](backend/requirements.txt)
+[![React 19](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](frontend/package.json)
+[![Solidity](https://img.shields.io/badge/solidity-truffle-363636?logo=solidity&logoColor=white)](contracts/contracts/UserFileStorage.sol)
+[![Status](https://img.shields.io/badge/status-alpha-E7B24B)](#status-and-limitations)
 
-**A decentralized media integrity platform built on Ethereum + IPFS.**
+[What it solves](#what-it-solves) ·
+[Quick start](#quick-start) ·
+[See it work](#see-it-work) ·
+[How it works](#workflows) ·
+[Architecture](#architecture) ·
+[API](#api-reference) ·
+[Status](#status-and-limitations)
 
-Stamp any file with a cryptographic fingerprint anchored forever on-chain.<br/>
-Verify it. Prove it. Share the proof with anyone — no account required.
+<br>
 
-<br/>
-
-![Ethereum](https://img.shields.io/badge/Ethereum-Solidity-C9A84C?style=for-the-badge&logo=ethereum&logoColor=F6E9BC&labelColor=0B0B0D)
-![IPFS](https://img.shields.io/badge/IPFS-Kubo-C9A84C?style=for-the-badge&logo=ipfs&logoColor=F6E9BC&labelColor=0B0B0D)
-![React](https://img.shields.io/badge/React-19-C9A84C?style=for-the-badge&logo=react&logoColor=F6E9BC&labelColor=0B0B0D)
-![Three.js](https://img.shields.io/badge/Three.js-r3f-C9A84C?style=for-the-badge&logo=threedotjs&logoColor=F6E9BC&labelColor=0B0B0D)
-![FastAPI](https://img.shields.io/badge/FastAPI-Python-C9A84C?style=for-the-badge&logo=fastapi&logoColor=F6E9BC&labelColor=0B0B0D)
-![Docker](https://img.shields.io/badge/Docker-Compose-C9A84C?style=for-the-badge&logo=docker&logoColor=F6E9BC&labelColor=0B0B0D)
-![License](https://img.shields.io/badge/License-MIT-C9A84C?style=for-the-badge&labelColor=0B0B0D)
-
-<br/>
-
-### ▸ Live Demo
-
-![Demo Part 1](gifs/Demo-First-Half.gif)
-
-![Demo Part 2](gifs/Demo-Second-Half.gif)
-
-</div>
-
----
-
-## ◆ What Is This?
-
-In a world where reality is manufactured, the only currency worth having is **verifiable truth**.
-
-VeritasChain lets you prove a file — a photo, a document, a video, a dataset — existed at a specific
-moment in time, published by a specific wallet, **without trusting any centralized authority**.
-
-> The proof lives on the Ethereum blockchain. It cannot be altered, deleted, or disputed.
-
-**What this is not:** content is pinned to IPFS, which is public and content-addressed. Anyone holding a
-CID can fetch the bytes. This is a *provenance and integrity* tool, not a privacy or encryption tool —
-stamp things you are willing to publish.
-
-<div align="center">
-
-<img src=".github/assets/flow.svg" width="100%" alt="Pipeline: file → SHA-256 → IPFS → Ethereum → proof"/>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/flow-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/flow-light.svg">
+  <img src="docs/assets/flow-dark.svg" alt="Pipeline: a file is pinned to IPFS, its content hash is anchored on Ethereum with the publisher wallet and a block timestamp, and the resulting CID plus transaction ID form a shareable proof." width="900">
+</picture>
 
 </div>
 
+<br>
+
+## What it solves
+
+A screenshot proves nothing. A file's metadata can be rewritten, its timestamp forged, its origin
+disputed. The usual answer is to trust somebody — a platform, a notary, a CDN — to vouch that the
+bytes are what they claim to be and arrived when they claim to have arrived.
+
+VeritasChain removes the somebody.
+
+You publish a file, its content hash is anchored on Ethereum alongside your wallet address and a block
+timestamp, and from then on anyone can check that record without asking permission, creating an
+account, or trusting this project's servers to still exist.
+
+> **The proof outlives the platform.** Even if every server here goes dark, the chain record stands —
+> readable by any Ethereum client, forever.
+
+**What it is not.** Content is pinned to IPFS, which is public and content-addressed: anyone holding a
+CID can fetch the bytes. This is a *provenance and integrity* tool, not a privacy or encryption tool.
+Stamp things you are willing to publish.
+
+<br>
+
+## See it work
+
+<details open>
+<summary><b>1 · Stamp a file — it becomes a permanent record</b></summary>
+
+Connect MetaMask, drop a file. The backend pins it to IPFS, takes the resulting CID, and writes it
+on-chain against your address:
+
+```text
+POST /api/v1/files/upload    evidence.png · 0xA3f…91c
+
+  ✦ pinned to IPFS         QmX4f…8ab
+  ✦ anchored on Ethereum   uploadFile(QmX4f…8ab, "evidence.png")
+  ✦ mapped transaction     0x7d2e…44f1
+
+  ✓ certificate — CID QmX4f…8ab · tx 0x7d2e…44f1
+```
+
+That tuple — hash, wallet, `block.timestamp` — is the whole claim: *this address published these exact
+bytes no later than this block.* Change one pixel and the CID changes completely, so the old record no
+longer matches the new file.
+
+![Stamping a file](gifs/Demo-First-Half.gif)
+</details>
+
+<details>
+<summary><b>2 · Verify without an account, a wallet, or a key</b></summary>
+
+Verification is a read. No sign-up, no connection, no API key:
+
+```text
+GET /api/v1/files/verify?file_hash=QmX4f…8ab
+
+  ✓ AUTHENTIC     content resolves on IPFS
+```
+
+The chain side — who published it and when — is read separately through `/files/transactions` and
+`/files/all-hashes`, or straight from the contract via `verifyFile()` and `getFileMetadata()`. A full
+provenance check reads both. See the [note on scope](#verifying-a-file).
+
+![Verifying a file](gifs/Demo-Second-Half.gif)
+</details>
+
+<details>
+<summary><b>3 · Stamp from a pipeline, not a browser</b></summary>
+
+Mint a key against your wallet, then stamp from CI, a cron job, or a camera rig:
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/api-keys/generate?user_address=0xYourWallet"
+
+curl -X POST "http://localhost:8000/api/v1/files/developer/upload?user_address=0xYourWallet" \
+  -H "X-API-Key: cg-XXXXXXXXXXXXXXXX-20260315183728" \
+  -F "file=@evidence.png" -F "file_name=evidence.png" -F "user_address=0xYourWallet"
+```
+
+Keys are bound to the wallet that requested them — a key presented with a different `user_address`
+is rejected with `403`. The developer tier also exposes search, chain stats, balances and metadata
+updates; see the [API reference](#api-reference).
+</details>
+
+<details>
+<summary><b>4 · Your wallet is the only account</b></summary>
+
+There is no user table. No email, no password, no session to steal. Identity is the address that signed
+its way onto the chain, and authorization is whatever that address already owns.
+
+Contract state is keyed by `msg.sender`, so per-user reads are scoped at the contract level — one
+address structurally cannot enumerate another's records.
+</details>
+
+<br>
+
 ---
 
-## ◆ Workflows
+## Workflows
 
 ### Stamping a file
 
@@ -140,56 +215,28 @@ requested them, so a key can only ever act for its own address.
 
 ---
 
-## ◆ Features
+## Why this approach
 
-<table>
-<tr>
-<td width="50%" valign="top">
+Most "content authenticity" tooling asks you to trust an issuer: a platform badge, a signing service,
+a vendor's certificate chain. That works right up until the issuer disappears, gets acquired, or
+decides your file is no longer convenient.
 
-### ⬢ Stamp
-Upload any file. Its IPFS content hash is anchored on-chain via smart contract, tied to your wallet.
+| | VeritasChain | Platform badges<br/>(C2PA services, verified marks) | Notary / timestamp SaaS |
+|---|:-:|:-:|:-:|
+| Proof survives the vendor shutting down | ✅ on-chain | ❌ | ❌ |
+| Verify without an account | ✅ | partial | ❌ |
+| Publisher identity is cryptographic, not administrative | ✅ wallet | ❌ | ❌ |
+| Anyone can audit the full record independently | ✅ | ❌ | partial |
+| Tamper-evident by construction | ✅ content-addressed | ✅ | ✅ |
+| No per-verification fee or rate limit | ✅ | ❌ | ❌ |
+| Works without the original file present | ✅ CID only | ❌ | ✅ |
 
-</td>
-<td width="50%" valign="top">
-
-### ⬢ Verify
-Paste an IPFS hash. Instantly know whether it has a blockchain record — **no account required**.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### ⬢ Chain of Custody
-Every record carries wallet address, timestamp, and transaction ID — an immutable audit trail.
-
-</td>
-<td width="50%" valign="top">
-
-### ⬢ Developer API
-Generate an API key with your MetaMask wallet. Stamp files from any pipeline or CI job.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### ⬢ No Accounts
-No sign-ups. No email. No passwords. Your wallet **is** your identity.
-
-</td>
-<td width="50%" valign="top">
-
-### ⬢ No File Database
-Content lives in IPFS, addressed by hash. No server-side file table, no owner who can quietly rewrite it.
-
-</td>
-</tr>
-</table>
+The tradeoff is real and worth stating plainly: anchoring costs gas, and pinned content is public.
+You are buying permanence and independence, and paying for it in transaction fees and disclosure.
 
 ---
 
-## ◆ Architecture
+## Architecture
 
 Four tiers. The browser never talks to IPFS or Ethereum directly — every call goes through FastAPI,
 which owns both the pinning client and the web3 provider.
@@ -276,7 +323,7 @@ calling wallet — one address can never reach another's records at the contract
 
 ---
 
-## ◆ API Reference
+## API Reference
 
 Base URL: `http://localhost:8000/api/v1` · Interactive docs: `http://localhost:8000/docs`
 
@@ -337,7 +384,7 @@ curl "http://localhost:8000/api/v1/files/verify?file_hash=<ipfs-cid>"
 
 ---
 
-## ◆ Quick Start
+## Quick Start
 
 ### Docker — one command
 
@@ -402,7 +449,7 @@ Full walkthrough in [SETUP.md](SETUP.md).
 
 ---
 
-## ◆ Environment
+## Environment
 
 **`backend/.env`**
 ```env
@@ -424,7 +471,7 @@ REACT_APP_IPFS_BASE_URL=https://ipfs.io/ipfs/
 
 ---
 
-## ◆ Project Structure
+## Project Structure
 
 ```
 VeritasChain/
@@ -451,7 +498,47 @@ VeritasChain/
 
 ---
 
-## ◆ Philosophy
+## Status and limitations
+
+**Alpha.** The stamp-and-verify loop works end to end against a local Ganache chain, and the contract's
+per-wallet scoping is sound. The trust boundary around it is not finished. Read this before pointing it
+at anything real.
+
+| | Area | State |
+|---|---|---|
+| ✅ | Contract storage & scoping | State keyed by `msg.sender`; one address cannot reach another's records |
+| ✅ | IPFS pinning and resolution | Kubo `/api/v0/add` and `/ls`, content-addressed end to end |
+| ✅ | Local dev stack | One-command Docker bring-up: Ganache + IPFS + backend + frontend |
+| ⚠️ | **Wallet ownership is unverified** | `user_address` is an unauthenticated request field — see below |
+| ⚠️ | **API key issuance is unauthenticated** | `POST /api-keys/generate` mints a key for any address |
+| ⚠️ | Transaction signing | Uses `.transact({"from": …})`, which needs node-held keys — Ganache only |
+| ⏳ | Testnet / mainnet | Blocked on client-side signing |
+| ⏳ | Key storage | Flat JSON file; no rotation policy or hashing at rest |
+
+### The open security gaps
+
+Two are worth spelling out, because they undercut the guarantee on the public endpoints:
+
+**Anyone can stamp a file as anyone else.** `POST /files/upload` accepts `user_address` as a plain form
+field and passes it straight to the contract call. There is no signature and no proof the caller controls
+that wallet, so a forged record can attribute any file to any address.
+
+**API keys can be minted for any wallet.** `POST /api-keys/generate?user_address=0xVictim` issues a
+working key with no ownership check, and `GET /api-keys/get/{address}` returns an existing key in
+plaintext. The `verify_api_key_and_wallet` dependency behind them is written correctly — it binds key to
+wallet and returns `403` on mismatch — but it is bypassed by the unauthenticated minting endpoint in
+front of it.
+
+Both have the same fix: have the client sign a nonce with MetaMask, recover the signer with
+`w3.eth.account.recover_message`, and trust the recovered address instead of the supplied string. That
+also replaces `.transact()` with a signed transaction, which is what unblocks real networks.
+
+Until that lands, treat this as a local demonstration of the architecture rather than a service to
+stamp anything you would need to defend.
+
+---
+
+## Philosophy
 
 VeritasChain was built anonymously.
 
@@ -465,7 +552,7 @@ The belief is simple: **knowledge should be free, and the tools to verify it sho
 
 ---
 
-## ◆ License
+## License
 
 MIT — do whatever you want with it.
 
