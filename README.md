@@ -191,38 +191,88 @@ Content lives in IPFS, addressed by hash. No server-side file table, no owner wh
 
 ## ◆ Architecture
 
-```
-┌──────────────────────────────────────────────────────────────────────┐
-│  FRONTEND  ·  React 19 · Three.js (@react-three/fiber + drei)        │
-│              MUI v7 · Framer Motion · React Router 7                 │
-│    Landing · Upload · Verify · How It Works · Docs · API Keys        │
-└───────────────────────────────┬──────────────────────────────────────┘
-                                │  REST  /api/v1
-┌───────────────────────────────▼──────────────────────────────────────┐
-│  BACKEND  ·  FastAPI (Python 3.10+) · web3.py                        │
-│    /files/*      public  — upload · verify · transactions · hashes   │
-│    /files/developer/*    — API-key guarded (X-API-Key header)        │
-│    /api-keys/*           — generate · get · regenerate · delete      │
-└──────────────┬──────────────────────────────────┬────────────────────┘
-               │                                  │
-┌──────────────▼──────────────┐   ┌───────────────▼────────────────────┐
-│  IPFS  ·  Kubo node         │   │  ETHEREUM  ·  Ganache / testnet    │
-│  :5001 API · :8080 gateway  │   │  UserFileStorage.sol (OpenZeppelin)│
-└─────────────────────────────┘   └────────────────────────────────────┘
+Four tiers. The browser never talks to IPFS or Ethereum directly — every call goes through FastAPI,
+which owns both the pinning client and the web3 provider.
+
+```mermaid
+flowchart TB
+    subgraph CLIENT["🌐 Client"]
+        direction LR
+        UI["React 19 · Three.js (r3f + drei)<br/>MUI v7 · Framer Motion · Router 7"]
+        MM["MetaMask<br/>wallet identity"]
+    end
+
+    subgraph API["⚙️ FastAPI · /api/v1"]
+        direction TB
+        PUB["files_router — public<br/>upload · verify · transactions<br/>all-hashes · ipfs-data"]
+        DEV["files_router — developer<br/>X-API-Key guarded<br/>search · stats · balance · delete"]
+        KEY["api_key_router<br/>generate · get · regenerate · delete"]
+        AUTH{{"auth dependency<br/>validate key → bind wallet"}}
+        DEV --- AUTH
+        KEY --- AUTH
+    end
+
+    subgraph SVC["🔧 Service layer"]
+        direction LR
+        FS["file_service"]
+        IH["ipfs_helper<br/>requests → /api/v0"]
+        BH["blockchain_helper<br/>web3.py contract calls"]
+        KH["api_key_helper<br/>secrets + JSON store"]
+    end
+
+    subgraph INFRA["🔗 Infrastructure"]
+        direction LR
+        IPFS[("IPFS · Kubo<br/>:5001 API · :8080 gateway")]
+        ETH[("Ethereum · Ganache/testnet<br/>UserFileStorage.sol")]
+    end
+
+    UI -->|REST/JSON| PUB
+    UI -->|REST/JSON| DEV
+    UI -->|REST/JSON| KEY
+    MM -.->|signs / supplies address| UI
+
+    PUB --> FS
+    DEV --> FS
+    AUTH --> KH
+    FS --> IH
+    FS --> BH
+
+    IH -->|pin + resolve| IPFS
+    BH -->|transact + call| ETH
+
+    style CLIENT fill:#151318,stroke:#C9A84C,color:#E8D08A
+    style API fill:#151318,stroke:#C9A84C,color:#E8D08A
+    style SVC fill:#151318,stroke:#C9A84C,color:#E8D08A
+    style INFRA fill:#151318,stroke:#C9A84C,color:#E8D08A
 ```
 
-**Smart contract — `contracts/contracts/UserFileStorage.sol`**
+### Layer responsibilities
 
-| Function | Purpose |
-|----------|---------|
-| `uploadFile(fileHash, fileName)` | Anchor a fingerprint against `msg.sender` |
-| `verifyFile(fileHash)` | Pure read — does this hash have a record? |
-| `getAllFileHashes()` | Every hash, name and timestamp for the caller |
-| `getFileMetadata(...)` / `updateFileMetadata(...)` | Read / amend record metadata |
-| `getFileHashByTransaction(txId)` | Resolve a transaction back to its fingerprint |
-| `getTransactionDetails(txHash)` | Full on-chain record for a transaction |
-| `searchFiles(query)` | Substring search across stored file names |
-| `deleteFile(fileHash)` | Retire a record owned by the caller |
+| Layer | Owns | Key modules |
+|-------|------|-------------|
+| **Client** | Wallet connection, file selection, 3D/motion UI, 10 routes | [`App.js`](frontend/src/App.js), `Components/`, `Micro-Components/` |
+| **Routing** | HTTP surface, validation, auth dependencies | [`api/endpoints/`](backend/app/api/endpoints), [`api/dependencies/auth.py`](backend/app/api/dependencies/auth.py) |
+| **Services** | Orchestration — pin, then anchor, then map | [`services/`](backend/app/services), [`utils/`](backend/app/utils) |
+| **Infrastructure** | Content persistence and consensus | Kubo, Ganache/testnet, `UserFileStorage.sol` |
+
+### Smart contract — [`UserFileStorage.sol`](contracts/contracts/UserFileStorage.sol)
+
+State is keyed by `msg.sender`, so every write and every per-user read is naturally scoped to the
+calling wallet — one address can never reach another's records at the contract level.
+
+| Function | Kind | Purpose |
+|----------|:----:|---------|
+| `uploadFile(fileHash, fileName)` | write | Append a record under `msg.sender` with `block.timestamp` |
+| `mapTransactionToIPFS(txHash, fileHash)` | write | Link a transaction to its CID; reverts if already mapped |
+| `deleteFile(fileHash)` | write | Remove a record owned by the caller, compacting the array |
+| `updateFileMetadata(...)` | write | Amend the caller's stored metadata |
+| `verifyFile(fileHash)` | view | Does this hash have a record? |
+| `getAllFileHashes()` | view | Hashes, names and timestamps for `msg.sender` |
+| `getUserFile(...)` / `getUserFileCount()` | view | Indexed access to the caller's records |
+| `getFileMetadata(...)` | view | Stored metadata for a hash |
+| `getFileHashByTransaction(txId)` | view | Resolve a transaction back to its CID |
+| `getTransactionDetails(txHash)` | view | Full on-chain record for a transaction |
+| `searchFiles(query)` | view | Substring match across the caller's file names |
 
 ---
 
