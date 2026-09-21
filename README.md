@@ -3,12 +3,12 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/banner-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="docs/assets/banner-light.svg">
-  <img src="docs/assets/banner-dark.svg" alt="VeritasChain — authenticate reality, preserve truth" width="900">
+  <img src="docs/assets/banner-dark.svg" alt="VeritasChain  authenticate reality, preserve truth" width="900">
 </picture>
 
 <br>
 
-### Prove a file existed, at a given moment, published by a given wallet — with nothing to trust but a public blockchain.
+### Prove a file existed, at a given moment, published by a given wallet  with nothing to trust but a public blockchain.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-C9A84C.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](backend/requirements.txt)
@@ -39,7 +39,7 @@
 ## What it solves
 
 A screenshot proves nothing. A file's metadata can be rewritten, its timestamp forged, its origin
-disputed. The usual answer is to trust somebody — a platform, a notary, a CDN — to vouch that the
+disputed. The usual answer is to trust somebody  a platform, a notary, a CDN  to vouch that the
 bytes are what they claim to be and arrived when they claim to have arrived.
 
 VeritasChain removes the somebody.
@@ -60,7 +60,7 @@ Stamp things you are willing to publish.
 ## See it work
 
 <details open>
-<summary><b>1 · Stamp a file — it becomes a permanent record</b></summary>
+<summary><b>1 · Stamp a file  it becomes a permanent record</b></summary>
 
 Connect MetaMask, drop a file. The backend pins it to IPFS, takes the resulting CID, and writes it
 on-chain against your address:
@@ -72,10 +72,10 @@ POST /api/v1/files/upload    evidence.png · 0xA3f…91c
   ✦ anchored on Ethereum   uploadFile(QmX4f…8ab, "evidence.png")
   ✦ mapped transaction     0x7d2e…44f1
 
-  ✓ certificate — CID QmX4f…8ab · tx 0x7d2e…44f1
+  ✓ certificate  CID QmX4f…8ab · tx 0x7d2e…44f1
 ```
 
-That tuple — hash, wallet, `block.timestamp` — is the whole claim: *this address published these exact
+That tuple  hash, wallet, `block.timestamp`  is the whole claim: *this address published these exact
 bytes no later than this block.* Change one pixel and the CID changes completely, so the old record no
 longer matches the new file.
 
@@ -93,7 +93,7 @@ GET /api/v1/files/verify?file_hash=QmX4f…8ab
   ✓ AUTHENTIC     content resolves on IPFS
 ```
 
-The chain side — who published it and when — is read separately through `/files/transactions` and
+The chain side  who published it and when  is read separately through `/files/transactions` and
 `/files/all-hashes`, or straight from the contract via `verifyFile()` and `getFileMetadata()`. A full
 provenance check reads both. See the [note on scope](#verifying-a-file).
 
@@ -113,7 +113,7 @@ curl -X POST "http://localhost:8000/api/v1/files/developer/upload?user_address=0
   -F "file=@evidence.png" -F "file_name=evidence.png" -F "user_address=0xYourWallet"
 ```
 
-Keys are bound to the wallet that requested them — a key presented with a different `user_address`
+Keys are bound to the wallet that requested them  a key presented with a different `user_address`
 is rejected with `403`. The developer tier also exposes search, chain stats, balances and metadata
 updates; see the [API reference](#api-reference).
 </details>
@@ -124,7 +124,7 @@ updates; see the [API reference](#api-reference).
 There is no user table. No email, no password, no session to steal. Identity is the address that signed
 its way onto the chain, and authorization is whatever that address already owns.
 
-Contract state is keyed by `msg.sender`, so per-user reads are scoped at the contract level — one
+Contract state is keyed by `msg.sender`, so per-user reads are scoped at the contract level  one
 address structurally cannot enumerate another's records.
 </details>
 
@@ -137,7 +137,7 @@ address structurally cannot enumerate another's records.
 ### Stamping a file
 
 The CID *is* the fingerprint. IPFS content-addressing hashes the bytes, so an identical file always
-yields an identical CID — and any single-bit change yields a completely different one. That CID is
+yields an identical CID  and any single-bit change yields a completely different one. That CID is
 what gets anchored on-chain.
 
 ```mermaid
@@ -159,7 +159,7 @@ sequenceDiagram
     E-->>B: tx receipt
     B->>E: mapTransactionToIPFS(txHash, cid)
     B-->>F: { ipfs_hash, transaction_receipt }
-    F-->>U: certificate — CID + tx ID
+    F-->>U: certificate  CID + tx ID
 ```
 
 On-chain the contract records `fileHash`, `fileName`, `msg.sender` and `block.timestamp`. That tuple
@@ -191,8 +191,8 @@ sequenceDiagram
     end
 ```
 
-> **Note on scope.** `/files/verify` checks IPFS resolution. The blockchain record — wallet, timestamp,
-> transaction — is read separately via `/files/transactions` and `/files/all-hashes`, or on-chain through
+> **Note on scope.** `/files/verify` checks IPFS resolution. The blockchain record  wallet, timestamp,
+> transaction  is read separately via `/files/transactions` and `/files/all-hashes`, or on-chain through
 > `verifyFile(fileHash)` and `getFileMetadata(...)`. A full-provenance check reads both.
 
 ### Developer API key lifecycle
@@ -238,7 +238,7 @@ You are buying permanence and independence, and paying for it in transaction fee
 
 ## Architecture
 
-Four tiers. The browser never talks to IPFS or Ethereum directly — every call goes through FastAPI,
+Four tiers. The browser never talks to IPFS or Ethereum directly  every call goes through FastAPI,
 which owns both the pinning client and the web3 provider.
 
 ```mermaid
@@ -251,8 +251,8 @@ flowchart TB
 
     subgraph API["⚙️ FastAPI · /api/v1"]
         direction TB
-        PUB["files_router — public<br/>upload · verify · transactions<br/>all-hashes · ipfs-data"]
-        DEV["files_router — developer<br/>X-API-Key guarded<br/>search · stats · balance · delete"]
+        PUB["files_router  public<br/>upload · verify · transactions<br/>all-hashes · ipfs-data"]
+        DEV["files_router  developer<br/>X-API-Key guarded<br/>search · stats · balance · delete"]
         KEY["api_key_router<br/>generate · get · regenerate · delete"]
         AUTH{{"auth dependency<br/>validate key → bind wallet"}}
         DEV --- AUTH
@@ -299,13 +299,13 @@ flowchart TB
 |-------|------|-------------|
 | **Client** | Wallet connection, file selection, 3D/motion UI, 10 routes | [`App.js`](frontend/src/App.js), `Components/`, `Micro-Components/` |
 | **Routing** | HTTP surface, validation, auth dependencies | [`api/endpoints/`](backend/app/api/endpoints), [`api/dependencies/auth.py`](backend/app/api/dependencies/auth.py) |
-| **Services** | Orchestration — pin, then anchor, then map | [`services/`](backend/app/services), [`utils/`](backend/app/utils) |
+| **Services** | Orchestration  pin, then anchor, then map | [`services/`](backend/app/services), [`utils/`](backend/app/utils) |
 | **Infrastructure** | Content persistence and consensus | Kubo, Ganache/testnet, `UserFileStorage.sol` |
 
-### Smart contract — [`UserFileStorage.sol`](contracts/contracts/UserFileStorage.sol)
+### Smart contract  [`UserFileStorage.sol`](contracts/contracts/UserFileStorage.sol)
 
 State is keyed by `msg.sender`, so every write and every per-user read is naturally scoped to the
-calling wallet — one address can never reach another's records at the contract level.
+calling wallet  one address can never reach another's records at the contract level.
 
 | Function | Kind | Purpose |
 |----------|:----:|---------|
@@ -347,7 +347,7 @@ Base URL: `http://localhost:8000/api/v1` · Interactive docs: `http://localhost:
 | `POST` | `/api-keys/regenerate?user_address=0x…` |
 | `DELETE` | `/api-keys/delete/{user_address}` |
 
-### Developer — requires `X-API-Key` header
+### Developer  requires `X-API-Key` header
 
 | Method | Endpoint | Params |
 |--------|----------|--------|
@@ -355,7 +355,7 @@ Base URL: `http://localhost:8000/api/v1` · Interactive docs: `http://localhost:
 | `GET` | `/files/developer/transactions` | `user_address` |
 | `GET` | `/files/developer/files-with-urls` | `user_address` |
 | `GET` | `/files/developer/transaction-details` | `tx_hash` |
-| `GET` | `/files/developer/blockchain-stats` | — (block height, gas price) |
+| `GET` | `/files/developer/blockchain-stats` |  (block height, gas price) |
 | `GET` | `/files/developer/balance` | `user_address` |
 | `GET` | `/files/developer/search` | `query` |
 | `GET` | `/files/developer/recent-transactions` | `limit` (default 10) |
@@ -366,17 +366,17 @@ Base URL: `http://localhost:8000/api/v1` · Interactive docs: `http://localhost:
 <summary><b>Stamp a file from the command line</b></summary>
 
 ```bash
-# 1 — mint an API key for your wallet
+# 1  mint an API key for your wallet
 curl -X POST "http://localhost:8000/api/v1/api-keys/generate?user_address=0xYourWallet"
 
-# 2 — stamp a file
+# 2  stamp a file
 curl -X POST "http://localhost:8000/api/v1/files/developer/upload?user_address=0xYourWallet" \
   -H "X-API-Key: <your-key>" \
   -F "file=@evidence.png" \
   -F "file_name=evidence.png" \
   -F "user_address=0xYourWallet"
 
-# 3 — verify it (public, no key needed)
+# 3  verify it (public, no key needed)
 curl "http://localhost:8000/api/v1/files/verify?file_hash=<ipfs-cid>"
 ```
 
@@ -386,7 +386,7 @@ curl "http://localhost:8000/api/v1/files/verify?file_hash=<ipfs-cid>"
 
 ## Quick Start
 
-### Docker — one command
+### Docker  one command
 
 ```bash
 ./start_all.sh          # macOS / Linux
@@ -406,7 +406,7 @@ Brings up Ganache + IPFS, migrates the contract, then boots backend and frontend
 ### Manual setup
 
 <details>
-<summary><b>1 — Smart contracts</b></summary>
+<summary><b>1  Smart contracts</b></summary>
 
 ```bash
 cd contracts
@@ -418,7 +418,7 @@ npx truffle migrate --network development
 </details>
 
 <details>
-<summary><b>2 — Backend</b></summary>
+<summary><b>2  Backend</b></summary>
 
 ```bash
 cd backend
@@ -432,7 +432,7 @@ uvicorn app.main:app --reload   # http://localhost:8000
 </details>
 
 <details>
-<summary><b>3 — Frontend</b></summary>
+<summary><b>3  Frontend</b></summary>
 
 ```bash
 cd frontend
@@ -486,7 +486,7 @@ VeritasChain/
 │   └── app/
 │       ├── main.py                 # app factory, CORS, /api/v1 router mount
 │       ├── api/endpoints/          # file_router · api_key_router
-│       ├── api/dependencies/       # auth — X-API-Key + wallet binding
+│       ├── api/dependencies/       # auth  X-API-Key + wallet binding
 │       ├── services/               # IPFS pinning · chain writes · key lifecycle
 │       ├── core/config.py          # pydantic settings
 │       └── utils/                  # blockchain_helper · logger
@@ -509,9 +509,9 @@ at anything real.
 | ✅ | Contract storage & scoping | State keyed by `msg.sender`; one address cannot reach another's records |
 | ✅ | IPFS pinning and resolution | Kubo `/api/v0/add` and `/ls`, content-addressed end to end |
 | ✅ | Local dev stack | One-command Docker bring-up: Ganache + IPFS + backend + frontend |
-| ⚠️ | **Wallet ownership is unverified** | `user_address` is an unauthenticated request field — see below |
+| ⚠️ | **Wallet ownership is unverified** | `user_address` is an unauthenticated request field  see below |
 | ⚠️ | **API key issuance is unauthenticated** | `POST /api-keys/generate` mints a key for any address |
-| ⚠️ | Transaction signing | Uses `.transact({"from": …})`, which needs node-held keys — Ganache only |
+| ⚠️ | Transaction signing | Uses `.transact({"from": …})`, which needs node-held keys  Ganache only |
 | ⏳ | Testnet / mainnet | Blocked on client-side signing |
 | ⏳ | Key storage | Flat JSON file; no rotation policy or hashing at rest |
 
@@ -525,8 +525,8 @@ that wallet, so a forged record can attribute any file to any address.
 
 **API keys can be minted for any wallet.** `POST /api-keys/generate?user_address=0xVictim` issues a
 working key with no ownership check, and `GET /api-keys/get/{address}` returns an existing key in
-plaintext. The `verify_api_key_and_wallet` dependency behind them is written correctly — it binds key to
-wallet and returns `403` on mismatch — but it is bypassed by the unauthenticated minting endpoint in
+plaintext. The `verify_api_key_and_wallet` dependency behind them is written correctly  it binds key to
+wallet and returns `403` on mismatch  but it is bypassed by the unauthenticated minting endpoint in
 front of it.
 
 Both have the same fix: have the client sign a nonce with MetaMask, recover the signer with
@@ -554,7 +554,7 @@ The belief is simple: **knowledge should be free, and the tools to verify it sho
 
 ## License
 
-MIT — do whatever you want with it.
+MIT  do whatever you want with it.
 
 <div align="center">
 <br/>
