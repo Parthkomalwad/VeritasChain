@@ -15,17 +15,25 @@
 
   <rect width="1100" height="330" rx="14" fill="url(#fbg)"/>
 
-  <!-- rail -->
-  <line x1="120" y1="150" x2="980" y2="150" stroke="#D8CBA8" stroke-width="2"/>
+  <!-- rail: spans node centres only, 120 (FILE) to 920 (PROOF) -->
+  <line x1="120" y1="150" x2="920" y2="150" stroke="#D8CBA8" stroke-width="2"/>
   <g stroke="#9A7B28" stroke-width="2" marker-end="url(#arrow)" fill="none">
     <path d="M150 150 H 255"/><path d="M355 150 H 460"/>
     <path d="M560 150 H 665"/><path d="M765 150 H 870"/>
   </g>
 
-  <!-- travelling payload -->
+  <!-- travelling payload: hops stage to stage, pausing while each one works.
+       Ends at 920 (PROOF centre) and fades there rather than sailing past it. -->
   <circle r="6" fill="#6E5518">
-    <animate attributeName="opacity" values="0;1;1;1;0" dur="6s" repeatCount="indefinite"/>
-    <animateMotion dur="6s" repeatCount="indefinite" path="M120,150 H 980"/>
+    <animate attributeName="opacity"
+             values="0;1;1;1;1;1;1;1;1;0"
+             keyTimes="0;0.04;0.20;0.30;0.46;0.56;0.72;0.82;0.94;1"
+             dur="6s" repeatCount="indefinite"/>
+    <animateMotion dur="6s" repeatCount="indefinite"
+                   keyPoints="0;0;0.25;0.25;0.5;0.5;0.75;0.75;1;1"
+                   keyTimes="0;0.06;0.22;0.32;0.48;0.58;0.74;0.84;0.94;1"
+                   calcMode="linear"
+                   path="M120,150 H 920"/>
   </circle>
 
   <g font-family="Inter, Helvetica, Arial, sans-serif" text-anchor="middle">
@@ -79,7 +87,7 @@
       <rect x="-40" y="-36" width="80" height="72" rx="8" fill="none" stroke="url(#fgold)" stroke-width="2"/>
       <path d="M-18 0 l12 12 l24 -26" fill="none" stroke="#6E5518" stroke-width="4" stroke-linecap="round"
             stroke-dasharray="60" stroke-dashoffset="60">
-        <animate attributeName="stroke-dashoffset" values="60;60;0;0" keyTimes="0;0.55;0.8;1" dur="6s" repeatCount="indefinite"/>
+        <animate attributeName="stroke-dashoffset" values="60;60;0;0" keyTimes="0;0.84;0.94;1" dur="6s" repeatCount="indefinite"/>
       </path>
       <text y="64" font-size="14" fill="#B08D33" letter-spacing="3">PROOF</text>
       <text y="84" font-size="11" fill="#7A7161">shareable forever</text>
