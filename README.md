@@ -199,15 +199,15 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    A[Wallet address] -->|POST /api-keys/generate| B[cg-XXXX-timestamp]
-    B --> C[(api_keys.json)]
-    C -->|X-API-Key header| D{validate}
-    D -->|key unknown| E[401 Invalid API key]
-    D -->|key maps to wallet| G{user_address given?}
-    G -->|no| H[Authorized]
-    G -->|mismatch| I[403 Wallet mismatch]
-    G -->|match| H
-    H --> J[/files/developer/*]
+    A["Wallet address"] -->|"POST /api-keys/generate"| B["cg-XXXX-timestamp"]
+    B --> C[("api_keys.json")]
+    C -->|"X-API-Key header"| D{"validate"}
+    D -->|"key unknown"| E["401 Invalid API key"]
+    D -->|"key maps to wallet"| G{"user_address given?"}
+    G -->|"no"| H["Authorized"]
+    G -->|"mismatch"| I["403 Wallet mismatch"]
+    G -->|"match"| H
+    H --> J["/files/developer/*"]
 ```
 
 Keys are generated with `secrets.choice` over a 16-character alphabet and bound to the wallet that
