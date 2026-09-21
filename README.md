@@ -12,14 +12,15 @@
 **A decentralized media integrity platform built on Ethereum + IPFS.**
 
 Stamp any file with a cryptographic fingerprint anchored forever on-chain.<br/>
-Verify it. Prove it. Share the proof with anyone — no account, no trust required.
+Verify it. Prove it. Share the proof with anyone — no account required.
 
 <br/>
 
-![Ethereum](https://img.shields.io/badge/Ethereum-Solidity%20%C2%B7%20Truffle-C9A84C?style=for-the-badge&logo=ethereum&logoColor=F6E9BC&labelColor=0B0B0D)
+![Ethereum](https://img.shields.io/badge/Ethereum-Solidity-C9A84C?style=for-the-badge&logo=ethereum&logoColor=F6E9BC&labelColor=0B0B0D)
 ![IPFS](https://img.shields.io/badge/IPFS-Kubo-C9A84C?style=for-the-badge&logo=ipfs&logoColor=F6E9BC&labelColor=0B0B0D)
-![React](https://img.shields.io/badge/React%2019-Three.js%20%C2%B7%20MUI%20v7-C9A84C?style=for-the-badge&logo=react&logoColor=F6E9BC&labelColor=0B0B0D)
-![FastAPI](https://img.shields.io/badge/FastAPI-Python%203.10+-C9A84C?style=for-the-badge&logo=fastapi&logoColor=F6E9BC&labelColor=0B0B0D)
+![React](https://img.shields.io/badge/React-19-C9A84C?style=for-the-badge&logo=react&logoColor=F6E9BC&labelColor=0B0B0D)
+![Three.js](https://img.shields.io/badge/Three.js-r3f-C9A84C?style=for-the-badge&logo=threedotjs&logoColor=F6E9BC&labelColor=0B0B0D)
+![FastAPI](https://img.shields.io/badge/FastAPI-Python-C9A84C?style=for-the-badge&logo=fastapi&logoColor=F6E9BC&labelColor=0B0B0D)
 ![Docker](https://img.shields.io/badge/Docker-Compose-C9A84C?style=for-the-badge&logo=docker&logoColor=F6E9BC&labelColor=0B0B0D)
 ![License](https://img.shields.io/badge/License-MIT-C9A84C?style=for-the-badge&labelColor=0B0B0D)
 
@@ -40,9 +41,13 @@ Verify it. Prove it. Share the proof with anyone — no account, no trust requir
 In a world where reality is manufactured, the only currency worth having is **verifiable truth**.
 
 VeritasChain lets you prove a file — a photo, a document, a video, a dataset — existed at a specific
-moment in time, uploaded by a specific wallet, **without trusting any centralized authority**.
+moment in time, published by a specific wallet, **without trusting any centralized authority**.
 
 > The proof lives on the Ethereum blockchain. It cannot be altered, deleted, or disputed.
+
+**What this is not:** content is pinned to IPFS, which is public and content-addressed. Anyone holding a
+CID can fetch the bytes. This is a *provenance and integrity* tool, not a privacy or encryption tool —
+stamp things you are willing to publish.
 
 <div align="center">
 
@@ -52,17 +57,86 @@ moment in time, uploaded by a specific wallet, **without trusting any centralize
 
 ---
 
-## ◆ The Pipeline
+## ◆ Workflows
 
-| # | Stage | What happens |
-|:-:|-------|--------------|
-| **1** | **Hash** | File is fingerprinted with SHA-256. The raw file never becomes a public artifact. |
-| **2** | **Pin** | Content is pinned to IPFS (Kubo) and you receive a content-addressed **CID**. |
-| **3** | **Anchor** | `UserFileStorage.uploadFile(fileHash, fileName)` writes hash + wallet + `block.timestamp` on-chain. |
-| **4** | **Prove** | You get a certificate: IPFS CID + transaction ID. Anyone can verify it, forever. |
+### Stamping a file
 
-Verification is a pure read: `verifyFile(fileHash)` returns a boolean straight from contract storage — no
-server, no database, nothing to compromise.
+The CID *is* the fingerprint. IPFS content-addressing hashes the bytes, so an identical file always
+yields an identical CID — and any single-bit change yields a completely different one. That CID is
+what gets anchored on-chain.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User + MetaMask
+    participant F as React Frontend
+    participant B as FastAPI Backend
+    participant I as IPFS (Kubo)
+    participant E as Ethereum
+
+    U->>F: select file + connect wallet
+    F->>B: POST /api/v1/files/upload<br/>(file, file_name, user_address)
+    B->>B: buffer to temp file
+    B->>I: POST /api/v0/add
+    I-->>B: CID (content hash)
+    B->>B: delete temp file
+    B->>E: uploadFile(cid, fileName)<br/>from: user_address
+    E-->>B: tx receipt
+    B->>E: mapTransactionToIPFS(txHash, cid)
+    B-->>F: { ipfs_hash, transaction_receipt }
+    F-->>U: certificate — CID + tx ID
+```
+
+On-chain the contract records `fileHash`, `fileName`, `msg.sender` and `block.timestamp`. That tuple
+is the proof: **this wallet published these exact bytes no later than this block.**
+
+### Verifying a file
+
+Verification needs no wallet, no API key, and no account:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor A as Anyone
+    participant F as React Frontend
+    participant B as FastAPI Backend
+    participant I as IPFS (Kubo)
+
+    A->>F: paste IPFS CID
+    F->>B: GET /api/v1/files/verify?file_hash=<CID>
+    B->>I: POST /api/v0/ls/<CID>
+    alt content resolves
+        I-->>B: 200 OK
+        B-->>F: { file_exists: true }
+        F-->>A: AUTHENTIC
+    else not found
+        I-->>B: 500 / not found
+        B-->>F: { file_exists: false }
+        F-->>A: NO RECORD
+    end
+```
+
+> **Note on scope.** `/files/verify` checks IPFS resolution. The blockchain record — wallet, timestamp,
+> transaction — is read separately via `/files/transactions` and `/files/all-hashes`, or on-chain through
+> `verifyFile(fileHash)` and `getFileMetadata(...)`. A full-provenance check reads both.
+
+### Developer API key lifecycle
+
+```mermaid
+flowchart LR
+    A[Wallet address] -->|POST /api-keys/generate| B[cg-XXXX-timestamp]
+    B --> C[(api_keys.json)]
+    C -->|X-API-Key header| D{validate}
+    D -->|key unknown| E[401 Invalid API key]
+    D -->|key maps to wallet| G{user_address given?}
+    G -->|no| H[Authorized]
+    G -->|mismatch| I[403 Wallet mismatch]
+    G -->|match| H
+    H --> J[/files/developer/*]
+```
+
+Keys are generated with `secrets.choice` over a 16-character alphabet and bound to the wallet that
+requested them, so a key can only ever act for its own address.
 
 ---
 
@@ -73,7 +147,7 @@ server, no database, nothing to compromise.
 <td width="50%" valign="top">
 
 ### ⬢ Stamp
-Upload any file. Its SHA-256 fingerprint is anchored on-chain via smart contract, tied to your wallet.
+Upload any file. Its IPFS content hash is anchored on-chain via smart contract, tied to your wallet.
 
 </td>
 <td width="50%" valign="top">
@@ -106,8 +180,8 @@ No sign-ups. No email. No passwords. Your wallet **is** your identity.
 </td>
 <td width="50%" valign="top">
 
-### ⬢ No File Custody
-We keep no file database. Only cryptographic fingerprints and CIDs live on-chain.
+### ⬢ No File Database
+Content lives in IPFS, addressed by hash. No server-side file table, no owner who can quietly rewrite it.
 
 </td>
 </tr>
