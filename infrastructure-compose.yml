@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  ganache:
+    image: trufflesuite/ganache:latest
+    container_name: ganache-persistent
+    restart: always
+    ports:
+      - "7545:8545"
+    volumes:
+      - ganache_data:/app/ganache
+    command: >
+      --mnemonic "income pistol usage dinosaur chef warm much cabbage draft face want hour"
+      --db /app/ganache/chaindata
+    networks:
+      - content-auth-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8545"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ipfs:
+    image: ipfs/kubo:latest
+    container_name: ipfs-node
+    restart: always
+    ports:
+      - "4001:4001"  # P2P port
+      - "5001:5001"  # API port
+      - "8080:8080"  # Gateway port
+    volumes:
+      - ipfs_data:/data/ipfs
+    networks:
+      - content-auth-network
+    healthcheck:
+      test: ["CMD", "ipfs", "id"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  content-auth-network:
+    driver: bridge
+    name: content-auth-network
+
+volumes:
+  ganache_data:
+    name: content_auth_ganache_data
+  ipfs_data:
+    name: content_auth_ipfs_data

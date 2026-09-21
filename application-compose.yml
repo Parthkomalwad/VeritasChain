@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=0
+      no_cache: true
+    image: content-auth/backend:latest
+    container_name: content-auth-backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - WEB3_PROVIDER_URI=http://ganache:8545
+      - IPFS_API_URL=http://ipfs:5001
+      - CONTRACT_ABI_PATH=/contracts/build/contracts/UserFileStorage.json
+    networks:
+      - content-auth-network
+    volumes:
+      - ./backend:/app
+      - ./contracts:/contracts
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - BUILDKIT_INLINE_CACHE=0
+      no_cache: true
+    image: content-auth/frontend:latest
+    container_name: content-auth-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - NODE_ENV=production
+    networks:
+      - content-auth-network
+
+networks:
+  content-auth-network:
+    external: true
+    name: content-auth-network

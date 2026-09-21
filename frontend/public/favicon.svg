@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#C9A84C"/>
+      <stop offset="100%" stop-color="#E8B94F"/>
+    </linearGradient>
+  </defs>
+  <!-- Dark hexagon -->
+  <polygon points="32,3 57,17.5 57,46.5 32,61 7,46.5 7,17.5" fill="#1A1A1A"/>
+  <!-- Gold border -->
+  <polygon points="32,3 57,17.5 57,46.5 32,61 7,46.5 7,17.5" fill="none" stroke="url(#g)" stroke-width="3"/>
+  <!-- V shape -->
+  <path d="M18 22 L32 42 L46 22" stroke="url(#g)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Apex dot -->
+  <circle cx="32" cy="42" r="3" fill="#E8B94F"/>
+</svg>

@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="VeritasChain — Authenticate Reality. Preserve Truth.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B0B0D"/>
+      <stop offset="55%" stop-color="#141318"/>
+      <stop offset="100%" stop-color="#0B0B0D"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#8C6F2A"/>
+      <stop offset="45%" stop-color="#E8D08A"/>
+      <stop offset="55%" stop-color="#F6E9BC"/>
+      <stop offset="100%" stop-color="#8C6F2A"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#F6E9BC" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#F6E9BC" stop-opacity="0"/>
+      <animateTransform attributeName="gradientTransform" type="translate" from="-1 0" to="1 0" dur="4.5s" repeatCount="indefinite"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#C9A84C" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#C9A84C" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+
+  <rect width="1200" height="320" fill="url(#bg)"/>
+  <ellipse cx="600" cy="160" rx="430" ry="150" fill="url(#glow)">
+    <animate attributeName="rx" values="410;470;410" dur="7s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.75;1;0.75" dur="7s" repeatCount="indefinite"/>
+  </ellipse>
+
+  <!-- isometric-ish rotating hex lattice, left -->
+  <g transform="translate(168,160)" opacity="0.95">
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="26s" repeatCount="indefinite"/>
+      <polygon points="0,-74 64,-37 64,37 0,74 -64,37 -64,-37" fill="none" stroke="url(#gold)" stroke-width="2"/>
+      <polygon points="0,-46 40,-23 40,23 0,46 -40,23 -40,-23" fill="none" stroke="#C9A84C" stroke-width="1.2" opacity="0.7"/>
+    </g>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" from="360" to="0" dur="18s" repeatCount="indefinite"/>
+      <polygon points="0,-24 21,-12 21,12 0,24 -21,12 -21,-12" fill="none" stroke="#F6E9BC" stroke-width="1.6"/>
+    </g>
+    <circle r="5" fill="#F6E9BC">
+      <animate attributeName="r" values="4;7;4" dur="2.4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- block chain, right: 4 linked blocks, sealing pulse -->
+  <g transform="translate(1032,160)">
+    <g stroke="#C9A84C" stroke-width="1.6" fill="none" opacity="0.85">
+      <path d="M-96 0 h40 M-16 0 h40 M64 0 h0"/>
+    </g>
+    <g fill="none" stroke="url(#gold)" stroke-width="2">
+      <rect x="-136" y="-22" width="40" height="44" rx="6"/>
+      <rect x="-56" y="-22" width="40" height="44" rx="6"/>
+      <rect x="24" y="-22" width="40" height="44" rx="6"/>
+    </g>
+    <rect x="-136" y="-22" width="40" height="44" rx="6" fill="#C9A84C" opacity="0">
+      <animate attributeName="opacity" values="0;0.45;0" dur="3s" begin="0s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="-56" y="-22" width="40" height="44" rx="6" fill="#C9A84C" opacity="0">
+      <animate attributeName="opacity" values="0;0.45;0" dur="3s" begin="0.6s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="24" y="-22" width="40" height="44" rx="6" fill="#C9A84C" opacity="0">
+      <animate attributeName="opacity" values="0;0.45;0" dur="3s" begin="1.2s" repeatCount="indefinite"/>
+    </rect>
+    <circle cx="-116" cy="0" r="3.5" fill="#F6E9BC">
+      <animate attributeName="cx" values="-116;-36;44;-116" dur="3.6s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+
+  <!-- wordmark -->
+  <g text-anchor="middle" font-family="Georgia, 'Playfair Display', serif">
+    <text x="600" y="150" font-size="72" letter-spacing="14" fill="url(#gold)">VERITASCHAIN</text>
+    <text x="600" y="150" font-size="72" letter-spacing="14" fill="url(#sheen)" opacity="0.55">VERITASCHAIN</text>
+  </g>
+  <text x="600" y="192" text-anchor="middle" font-family="Inter, Helvetica, Arial, sans-serif"
+        font-size="17" letter-spacing="7" fill="#9A8F76">AUTHENTICATE REALITY · PRESERVE TRUTH</text>
+
+  <g stroke="url(#gold)" stroke-width="1.5">
+    <line x1="420" y1="222" x2="780" y2="222" opacity="0.5"/>
+  </g>
+  <circle cx="420" cy="222" r="3" fill="#F6E9BC">
+    <animate attributeName="cx" values="420;780;420" dur="5s" repeatCount="indefinite"/>
+  </circle>
+
+  <text x="600" y="262" text-anchor="middle" font-family="'JetBrains Mono', Consolas, monospace"
+        font-size="13" letter-spacing="2.5" fill="#6E6656">
+    SHA-256 → IPFS CID → ETHEREUM TX
+    <animate attributeName="opacity" values="0.55;1;0.55" dur="4s" repeatCount="indefinite"/>
+  </text>
+</svg>
