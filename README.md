@@ -14,8 +14,10 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](backend/requirements.txt)
 [![React 19](https://img.shields.io/badge/react-19-61DAFB?logo=react&logoColor=black)](frontend/package.json)
 [![Solidity](https://img.shields.io/badge/solidity-truffle-363636?logo=solidity&logoColor=white)](contracts/contracts/UserFileStorage.sol)
+[![Docs](https://img.shields.io/badge/docs-website-C9A84C)](https://claude.ai/artifact/BvcJEcPhQ3o3ubznUxCB5C)
 [![Status](https://img.shields.io/badge/status-alpha-E7B24B)](#status-and-limitations)
 
+**[Website & docs](https://claude.ai/artifact/BvcJEcPhQ3o3ubznUxCB5C)** ·
 [What it solves](#what-it-solves) ·
 [Quick start](#quick-start) ·
 [See it work](#see-it-work) ·
